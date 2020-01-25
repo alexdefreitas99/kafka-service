@@ -1,4 +1,4 @@
-package com.dimed.model;
+package com.dimed.customer.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

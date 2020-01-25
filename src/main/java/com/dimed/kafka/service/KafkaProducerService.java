@@ -1,6 +1,8 @@
-package com.dimed.service;
+package com.dimed.kafka.service;
 
-import com.dimed.pojo.KafkaProperties;
+import com.dimed.kafka.pojo.KafkaProperties;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.Properties;
 
 @Service
+@Slf4j
 public class KafkaProducerService {
 
     @Autowired
@@ -18,7 +21,7 @@ public class KafkaProducerService {
 
     private Properties producerPropertiesConfig() {
         Properties props = new Properties();
-        props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.bootstrapServer);
+        props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServer());
         props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         return props;
@@ -29,23 +32,37 @@ public class KafkaProducerService {
     }
 
     private ProducerRecord<String, String> getRecord(String message) {
-        return new ProducerRecord<>(kafkaProperties.topic, message);
+        return new ProducerRecord<>(kafkaProperties.getTopic(), message);
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String message, int timesToSend) {
         KafkaProducer<String, String> kafkaProducer = getProducer();
-        kafkaProducer.send(getRecord(message));
+        for (int i = 0; i < timesToSend; i++) {
+            kafkaProducer.send(getRecord(message), messageCallback());
+        }
 
-        //Await accomulated records in produces will be send
+        /* Await accomulated records in produces will be send  */
         kafkaProducer.flush();
-        kafkaProducer.close();
 
+        kafkaProducer.close();
+    }
+
+    public Callback messageCallback() {
+        return (metadata, exception) -> {
+            if (exception == null) {
+                log.info("Topic: " + metadata.topic() + "\n" +
+                        "Offset: " + metadata.offset() + "\n" +
+                        "Partition: " + metadata.partition() + "\n" +
+                        "TimeStamp: " + metadata.timestamp());
+            } else {
+                log.error("Eror while producing message", exception);
+            }
+        };
     }
 
 
 }
-
-
+// More properties configuration
 
 //        props.put("bootstrap.servers", "localhost:9092");
 //        props.put("acks", "all");

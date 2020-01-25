@@ -1,6 +1,6 @@
-package com.dimed.repository;
+package com.dimed.customer.repository;
 
-import com.dimed.model.Customer;
+import com.dimed.customer.model.Customer;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
-package com.dimed.service;
+package com.dimed.customer.service;
 
-import com.dimed.model.Customer;
-import com.dimed.repository.CustomerRepository;
+import com.dimed.customer.model.Customer;
+import com.dimed.customer.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,16 +1,19 @@
-package com.dimed.pojo;
+package com.dimed.kafka.pojo;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Data
+@Getter
 @Component
 public class KafkaProperties {
 
     @Value("${kafka.topic}")
-    public String topic;
+    private String topic;
 
     @Value("${kafka.bootstrap.server}")
-    public String bootstrapServer;
+    private String bootstrapServer;
+
+    @Value("${kafka.consumer.group}")
+    private String consumerGroup;
 }
