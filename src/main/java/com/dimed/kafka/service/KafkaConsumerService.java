@@ -1,20 +1,23 @@
 package com.dimed.kafka.service;
 
 import com.dimed.kafka.pojo.KafkaProperties;
+import jdk.internal.jline.internal.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 @Service
+@Slf4j
 public class KafkaConsumerService {
 
     @Autowired
@@ -29,15 +32,17 @@ public class KafkaConsumerService {
         return props;
     }
 
-    public void runConsumer() {
-        KafkaConsumer consumer = new KafkaConsumer(consumerPropertiesConfig());
-        consumer.subscribe(Collections.singletonList("first_topic"));
+    public void runConsumer(String topic) {
+        Properties properties = consumerPropertiesConfig();
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
+        consumer.subscribe(Collections.singletonList(topic));
 
         final int giveUp = 100;
         int noRecordsCount = 0;
 
         while (true) {
-            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+            final ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofMillis(1000));
 
             if (consumerRecords.count() == 0) {
                 noRecordsCount++;
@@ -45,30 +50,30 @@ public class KafkaConsumerService {
                 else continue;
             }
 
-            consumerRecords.forEach(record -> {
-                System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",
-                        record.key(), record.value(),
-                        record.partition(), record.offset());
-            });
+            consumerRecords.forEach(record -> Log.info("Consumer Record:(%d, %s, %d, %d)\n",
+                    record.key(), record.value(),
+                    record.partition(), record.offset()));
 
             consumer.commitAsync();
         }
         consumer.close();
-        System.out.println("DONE");
+        log.info("Done");
     }
 
 
-    public ConsumerRecords<String, String> getAllMessages(String topic) {
-        KafkaConsumer<String, String> consumer = new KafkaConsumer(consumerPropertiesConfig());
-        TopicPartition topicPartition = new TopicPartition(topic, 0);
-        List<TopicPartition> partitions = Collections.singletonList(topicPartition);
-        consumer.assign(partitions);
+    public void runConsumerFromBegin(String topic) {
+        Properties properties = consumerPropertiesConfig();
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
+        consumer.subscribe(Collections.singletonList(topic));
 
-
-        consumer.poll(0);
-        consumer.seekToBeginning(consumer.assignment());
-        ConsumerRecords<String, String> records = consumer.poll(0);
-        return records;
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
+            for (ConsumerRecord<String, String> record : records) {
+                log.info("Key: " + record.key());
+                log.info("Partition: " + record.partition());
+                log.info("Value: " + record.value());
+            }
+        }
     }
-
 }

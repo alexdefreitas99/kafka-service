@@ -1,12 +1,10 @@
 package com.dimed.kafka;
 
-import com.dimed.customer.model.Customer;
 import com.dimed.kafka.service.KafkaConsumerService;
 import com.dimed.kafka.service.KafkaProducerService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -30,14 +28,15 @@ public class KafkaResource {
         return "Message \n sent \n to \n kafka";
     }
 
-    @GetMapping
-    public ConsumerRecords<String, String> getAllMessagesFromTopic(@RequestParam String topic) {
-        return kafkaConsumerService.getAllMessages(topic);
+    @GetMapping(path = "/run-consumer-from-begin/{topic}")
+    public String runConsumerFromBegin(@PathVariable String topic) {
+        kafkaConsumerService.runConsumerFromBegin(topic);
+        return "Consumer is running !!";
     }
 
-    @GetMapping(path = "/run-consumer")
-    public String runConsumer() {
-        kafkaConsumerService.runConsumer();
+    @GetMapping(path = "/run-consumer/{topic}")
+    public String runConsumer(@PathVariable String topic) {
+        kafkaConsumerService.runConsumer(topic);
         return "Consumer is running !!";
     }
 }
