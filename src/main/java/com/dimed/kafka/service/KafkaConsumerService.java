@@ -1,7 +1,6 @@
 package com.dimed.kafka.service;
 
 import com.dimed.kafka.pojo.KafkaProperties;
-import jdk.internal.jline.internal.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -50,10 +49,11 @@ public class KafkaConsumerService {
                 else continue;
             }
 
-            consumerRecords.forEach(record -> Log.info("Consumer Record:(%d, %s, %d, %d)\n",
-                    record.key(), record.value(),
-                    record.partition(), record.offset()));
-
+            consumerRecords.forEach(record -> {
+                log.info("Key: " + record.key());
+                log.info("Partition: " + record.partition());
+                log.info("Value: " + record.value());
+            });
             consumer.commitAsync();
         }
         consumer.close();
