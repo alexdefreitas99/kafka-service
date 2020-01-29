@@ -1,6 +1,9 @@
 package com.dimed.kafka.service;
 
+import com.dimed.kafka.Model.KafkaMessageModel;
+import com.dimed.kafka.Model.KafkaRequest;
 import com.dimed.kafka.pojo.KafkaProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -31,18 +34,23 @@ public class KafkaProducerService {
         return new KafkaProducer<>(producerPropertiesConfig());
     }
 
-    private ProducerRecord<String, String> getRecord(String message) {
-        return new ProducerRecord<>(kafkaProperties.getTopic(), message);
+    private ProducerRecord<String, String> getRecord(KafkaMessageModel message) throws  Exception {
+        return new ProducerRecord<>(kafkaProperties.getTopic(), new ObjectMapper().writeValueAsString(message));
     }
 
-    public void sendMessage(String message, int timesToSend) {
+    public void sendMessage(KafkaRequest message) throws Exception {
         KafkaProducer<String, String> kafkaProducer = getProducer();
-        for (int i = 0; i < timesToSend; i++) {
-            kafkaProducer.send(getRecord(message), messageCallback());
-        }
+        KafkaMessageModel kafkaMessageModel = KafkaMessageModel
+                .builder()
+                .filial(message.getFilial())
+                .idAssinatura(message.getIdAssinatura())
+                .hostname(message.getHostname())
+                .itensAssinados(true)
+                .build();
 
-        /* Await accomulated records in produces will be send  */
-        kafkaProducer.flush();
+        kafkaProducer.send(getRecord(kafkaMessageModel), messageCallback());
+
+//        kafkaProducer.flush();
 
         kafkaProducer.close();
     }
