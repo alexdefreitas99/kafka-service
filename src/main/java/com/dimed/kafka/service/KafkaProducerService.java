@@ -34,24 +34,22 @@ public class KafkaProducerService {
         return new KafkaProducer<>(producerPropertiesConfig());
     }
 
-    private ProducerRecord<String, String> getRecord(KafkaMessageModel message) throws  Exception {
-        return new ProducerRecord<>(kafkaProperties.getTopic(), new ObjectMapper().writeValueAsString(message));
+    private ProducerRecord<String, String> getRecord(String topic, KafkaMessageModel message) throws  Exception {
+        return new ProducerRecord<>(topic, new ObjectMapper().writeValueAsString(message));
     }
 
     public void sendMessage(KafkaRequest message) throws Exception {
         KafkaProducer<String, String> kafkaProducer = getProducer();
+
         KafkaMessageModel kafkaMessageModel = KafkaMessageModel
                 .builder()
-                .filial(message.getFilial())
+                .filialTopic("filial_" + message.getFilial())
                 .idAssinatura(message.getIdAssinatura())
                 .hostname(message.getHostname())
                 .itensAssinados(true)
                 .build();
 
-        kafkaProducer.send(getRecord(kafkaMessageModel), messageCallback());
-
-//        kafkaProducer.flush();
-
+        kafkaProducer.send(getRecord(kafkaMessageModel.getFilialTopic(), kafkaMessageModel), messageCallback());
         kafkaProducer.close();
     }
 

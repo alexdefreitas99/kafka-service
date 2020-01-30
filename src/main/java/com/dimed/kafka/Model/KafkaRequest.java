@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class KafkaRequest {
-    private String filial;
+    private Integer filial;
     private int idAssinatura;
     private String hostname;
 
