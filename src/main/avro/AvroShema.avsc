@@ -1,0 +1,9 @@
+{
+    "name": "Assinatura",
+    "namespace": "com.dimed",
+    "type": "record",
+    "fields" : [
+         { "name": "idAssinatura", "type": "long" },
+         {"name": "hostname", "type": "string"}
+    ]
+}

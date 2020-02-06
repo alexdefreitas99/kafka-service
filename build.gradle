@@ -1,3 +1,12 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.9.1"
+	}
+}
+
 plugins {
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
@@ -20,10 +29,12 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+		url "https://packages.confluent.io/maven"
+	}
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testCompile 'com.jayway.jsonpath:json-path'
 	compileOnly 'org.projectlombok:lombok'
@@ -32,9 +43,17 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
-	compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.4.0'
 
+	compile "io.confluent:kafka-schema-registry-client:5.3.0"
+	compile "org.apache.avro:avro:1.8.2"
+	compile "io.confluent:kafka-avro-serializer:5.2.1"
+	compile "io.confluent:kafka-streams-avro-serde:5.3.0"
+
+	compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.4.0'
+	compile 'org.springframework.kafka:spring-kafka'
 }
+
+apply plugin: "com.commercehub.gradle.plugin.avro"
 
 test {
 	useJUnitPlatform()

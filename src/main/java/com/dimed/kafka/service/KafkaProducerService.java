@@ -1,5 +1,6 @@
 package com.dimed.kafka.service;
 
+import com.dimed.kafka.Model.AssinaturaModel;
 import com.dimed.kafka.Model.KafkaMessageModel;
 import com.dimed.kafka.Model.KafkaRequest;
 import com.dimed.kafka.pojo.KafkaProperties;
@@ -40,6 +41,8 @@ public class KafkaProducerService {
 
     public void sendMessage(KafkaRequest message) throws Exception {
         KafkaProducer<String, String> kafkaProducer = getProducer();
+
+
 
         KafkaMessageModel kafkaMessageModel = KafkaMessageModel
                 .builder()
